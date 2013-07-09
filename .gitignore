@@ -5,3 +5,4 @@
 *.war
 *.ear
 /nb-configuration.xml
+/src/main/resources/config.properties
