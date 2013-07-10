@@ -47,6 +47,31 @@ public class ServerQuery
                 JTS3ServerQuery.LISTMODE_CHANNELLIST, virtualServer);
     }
 
+    public HashMap<String, String> doCommand(TSCommand command, int virtualServer)
+            throws CouldNotConnectException, VirtualServerDoesNotExistException,
+            CouldNotGetListException
+    {
+        return getCommandFromCache(command, virtualServer);
+    }
+
+    private HashMap<String, String> getCommandFromCache(TSCommand commandType, int virtualServer) throws
+            CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotGetListException
+    {
+        String cacheKey = "Commands.Cache." + commandType.name();
+        
+        HashMap<String, String> commandData = (HashMap<String, String>) CacheFactory.getCache().getEntry(cacheKey);
+
+        // do we have a cached version?
+        if (commandData == null)
+        {
+            commandData = getCommand(commandType, virtualServer);
+
+            CacheFactory.getCache().putEntry(cacheKey, commandData, CACHE_TTL);
+        }
+
+        return commandData;
+    }
+
     private List<HashMap<String, String>> getListFromCache(String cacheKey,
             int listType, int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotGetListException
@@ -65,6 +90,13 @@ public class ServerQuery
         return dataList;
     }
 
+    private HashMap<String, String> getCommand(TSCommand commandType,
+            int virtualServer) throws CouldNotConnectException,
+            VirtualServerDoesNotExistException, CouldNotGetListException
+    {
+        return null;
+    }
+    
     private List<HashMap<String, String>> getList(int listType,
             int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotGetListException
@@ -98,8 +130,8 @@ public class ServerQuery
                         "Virtual server does not exist: " + virtualServer);
             }
 
-            List<HashMap<String, String>> dataChannelList = query.getList(
-                    listType);
+            List<HashMap<String, String>> dataChannelList = query.getList(listType);
+
             if (dataChannelList != null)
             {
                 return dataChannelList;
@@ -144,6 +176,7 @@ public class ServerQuery
     void echoError(JTS3ServerQuery query)
     {
         String error = query.getLastError();
+
         if (error != null)
         {
             Logger.getLogger(ServerQuery.class.getName()).log(Level.SEVERE,
