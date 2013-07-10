@@ -1,10 +1,7 @@
 package org.coderspotting.ts.query.rest.server;
 
-import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
-import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
-import org.coderspotting.ts.query.rest.server.CouldNotExecuteCommandException;
+import org.coderspotting.ts.query.rest.server.command.SimpleCommand;
 import de.stefan1200.jts3serverquery.JTS3ServerQuery;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +11,7 @@ import org.coderspotting.ts.query.cache.CacheFactory;
 import org.coderspotting.ts.query.cache.CacheTime;
 import org.coderspotting.ts.query.config.Configuration;
 import org.coderspotting.ts.query.config.ConfigurationFactory;
+import org.coderspotting.ts.query.rest.server.command.ICommand;
 
 public class ServerQuery
 {
@@ -50,29 +48,29 @@ public class ServerQuery
                 JTS3ServerQuery.LISTMODE_CHANNELLIST, virtualServer);
     }
 
-    public List<HashMap<String, String>> doCommand(TSCommand command, int virtualServer)
+    public void doCommand(ICommand command, int virtualServer)
             throws CouldNotConnectException, VirtualServerDoesNotExistException,
             CouldNotExecuteCommandException
     {
-        return getCommandFromCache(command, virtualServer);
+        getCommandFromCache(command, virtualServer);
     }
 
-    private List<HashMap<String, String>> getCommandFromCache(TSCommand commandType, int virtualServer) throws
+    private void getCommandFromCache(ICommand command, int virtualServer) throws
             CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotExecuteCommandException
     {
-        String cacheKey = "Commands.Cache." + commandType.getRawCommand();
+        String cacheKey = "Commands.Cache." + command.getNativeTSCommand();
 
         List<HashMap<String, String>> commandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(cacheKey);
 
         // do we have a cached version?
         if (commandData == null)
         {
-            commandData = getCommand(commandType, virtualServer);
+            commandData = executeCommand(command, virtualServer);
 
             CacheFactory.getCache().putEntry(cacheKey, commandData, CACHE_TTL);
         }
 
-        return commandData;
+        command.processRawOutput(commandData);
     }
 
     private List<HashMap<String, String>> getListFromCache(String cacheKey,
@@ -93,7 +91,7 @@ public class ServerQuery
         return dataList;
     }
 
-    private List<HashMap<String, String>> getCommand(TSCommand commandType,
+    private List<HashMap<String, String>> executeCommand(ICommand command,
             int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotExecuteCommandException
     {
@@ -126,7 +124,7 @@ public class ServerQuery
                         "Virtual server does not exist: " + virtualServer);
             }
 
-            HashMap<String, String> rawOutput = query.doCommand(commandType.getRawCommand());
+            HashMap<String, String> rawOutput = query.doCommand(command.getNativeTSCommand());
 
             if (rawOutput != null)
             {
@@ -144,14 +142,14 @@ public class ServerQuery
                 {
                     echoError(query);
 
-                    throw new CouldNotExecuteCommandException("Could not execute command " + commandType.getRawCommand());
+                    throw new CouldNotExecuteCommandException("Could not execute command " + command.getNativeTSCommand());
                 }
             }
             else
             {
                 echoError(query);
 
-                throw new CouldNotExecuteCommandException("Could not execute command " + commandType.getRawCommand());
+                throw new CouldNotExecuteCommandException("Could not execute command " + command.getNativeTSCommand());
             }
         }
         finally

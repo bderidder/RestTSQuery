@@ -21,8 +21,8 @@ import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
 import org.coderspotting.ts.query.rest.server.CouldNotExecuteCommandException;
 import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
 import org.coderspotting.ts.query.rest.server.ServerQuery;
-import org.coderspotting.ts.query.rest.server.TSCommand;
 import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.command.ClientDBListCommand;
 
 @Path("/virtualservers/{serverId}/clients")
 public class ClientsResource
@@ -44,9 +44,11 @@ public class ClientsResource
 
             List<HashMap<String, String>> clients = query.getClientList(virtualServer);
 
-            List<HashMap<String, String>> cmdOutput = query.doCommand(new TSCommand("clientdblist"), virtualServer);
+            ClientDBListCommand cmd = new ClientDBListCommand();
             
-            HashMapUtils.outputHashMap(cmdOutput);
+            query.doCommand(cmd, virtualServer);
+            
+            HashMapUtils.outputHashMap(cmd.getRawOutput());
             
             try
             {
