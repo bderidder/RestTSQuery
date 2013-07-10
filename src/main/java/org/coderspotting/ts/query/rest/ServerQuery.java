@@ -69,7 +69,7 @@ public class ServerQuery
             int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotGetListException
     {
-        Configuration config = new ConfigurationFactory().getConfiguration();
+        Configuration config = ConfigurationFactory.getConfiguration();
 
         JTS3ServerQuery query = null;
 
