@@ -1,12 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.coderspotting.ts.query.cache;
 
 /**
+ * Useful time constants to express Time To Live values
+ * expressed in milliseconds.
  *
- * @author Bavo
+ * @author Bavo De Ridder <http://www.coderspotting.org/>
  */
 public class CacheTime
 {
