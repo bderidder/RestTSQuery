@@ -1,4 +1,4 @@
-package org.coderspotting.ts.query.rest;
+package org.coderspotting.ts.query.rest.resources;
 
 import java.util.Collection;
 import java.util.HashMap;

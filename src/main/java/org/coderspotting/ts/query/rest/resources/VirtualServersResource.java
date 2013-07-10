@@ -16,9 +16,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
-import org.coderspotting.ts.query.rest.JsonHelper;
-import org.coderspotting.ts.query.rest.ServerQuery;
-import org.coderspotting.ts.query.rest.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.ServerQuery;
+import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
 
 @Path("/virtualservers")
 public class VirtualServersResource

@@ -1,5 +1,8 @@
-package org.coderspotting.ts.query.rest;
+package org.coderspotting.ts.query.rest.server;
 
+import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
+import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
+import org.coderspotting.ts.query.rest.server.CouldNotExecuteCommandException;
 import de.stefan1200.jts3serverquery.JTS3ServerQuery;
 import java.util.Collection;
 import java.util.HashMap;

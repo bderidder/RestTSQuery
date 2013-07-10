@@ -1,4 +1,4 @@
-package org.coderspotting.ts.query.rest;
+package org.coderspotting.ts.query.rest.server;
 
 public class CouldNotGetListException extends Exception
 {

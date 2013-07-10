@@ -7,7 +7,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.coderspotting.ts.query.config.Configuration;
-import org.coderspotting.ts.query.rest.ServerQuery;
+import org.coderspotting.ts.query.rest.server.ServerQuery;
 
 /**
  * Simple implementation of the Configuration interface based on in-memory Properties.

@@ -13,9 +13,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.coderspotting.ts.query.rest.JsonHelper;
-import org.coderspotting.ts.query.rest.ServerQuery;
-import org.coderspotting.ts.query.rest.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.ServerQuery;
+import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
 
 @Path("/virtualservers/{id}/channels")
 public class ChannelsResource

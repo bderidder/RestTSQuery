@@ -16,15 +16,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
-import org.coderspotting.ts.query.rest.ClientDoesNotExistException;
-import org.coderspotting.ts.query.rest.CouldNotConnectException;
-import org.coderspotting.ts.query.rest.CouldNotExecuteCommandException;
-import org.coderspotting.ts.query.rest.CouldNotGetListException;
-import org.coderspotting.ts.query.rest.HashMapUtils;
-import org.coderspotting.ts.query.rest.JsonHelper;
-import org.coderspotting.ts.query.rest.ServerQuery;
-import org.coderspotting.ts.query.rest.TSCommand;
-import org.coderspotting.ts.query.rest.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.ClientDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
+import org.coderspotting.ts.query.rest.server.CouldNotExecuteCommandException;
+import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
+import org.coderspotting.ts.query.rest.server.ServerQuery;
+import org.coderspotting.ts.query.rest.server.TSCommand;
+import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
 
 @Path("/virtualservers/{serverId}/clients")
 public class ClientsResource
