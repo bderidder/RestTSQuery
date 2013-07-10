@@ -1,14 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.coderspotting.ts.query.cache.spi;
+package org.coderspotting.ts.query.cache.rt;
 
 /**
+ * A helper class to store the cached object together with the time-to-live.
  *
- * @author Bavo
+ * @author Bavo De Ridder <http://www.coderspotting.org/>
  */
-public class CacheEntry
+public final class CacheEntry
 {
     private Object value;
     private long ttl;
@@ -24,7 +21,7 @@ public class CacheEntry
         return value;
     }
 
-    private final void setValue(Object value)
+    private void setValue(Object value)
     {
         this.value = value;
     }
@@ -34,7 +31,7 @@ public class CacheEntry
         return ttl;
     }
 
-    private final void setTtl(long ttl)
+    private void setTtl(long ttl)
     {
         this.ttl = ttl;
     }
