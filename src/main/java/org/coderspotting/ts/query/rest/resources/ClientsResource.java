@@ -18,9 +18,12 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.coderspotting.ts.query.rest.ClientDoesNotExistException;
 import org.coderspotting.ts.query.rest.CouldNotConnectException;
+import org.coderspotting.ts.query.rest.CouldNotExecuteCommandException;
 import org.coderspotting.ts.query.rest.CouldNotGetListException;
+import org.coderspotting.ts.query.rest.HashMapUtils;
 import org.coderspotting.ts.query.rest.JsonHelper;
 import org.coderspotting.ts.query.rest.ServerQuery;
+import org.coderspotting.ts.query.rest.TSCommand;
 import org.coderspotting.ts.query.rest.VirtualServerDoesNotExistException;
 
 @Path("/virtualservers/{serverId}/clients")
@@ -43,6 +46,10 @@ public class ClientsResource
 
             List<HashMap<String, String>> clients = query.getClientList(virtualServer);
 
+            List<HashMap<String, String>> cmdOutput = query.doCommand(new TSCommand("clientdblist"), virtualServer);
+            
+            HashMapUtils.outputHashMap(cmdOutput);
+            
             try
             {
                 String json = JsonHelper.hashMapListToJson(clients);
@@ -64,6 +71,12 @@ public class ClientsResource
                     "404 NOT FOUND - Virtual Server " + virtualServer).build();
         }
         catch (CouldNotGetListException ex)
+        {
+            Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not get list").build();
+        }
+        catch (CouldNotExecuteCommandException ex)
         {
             Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
 

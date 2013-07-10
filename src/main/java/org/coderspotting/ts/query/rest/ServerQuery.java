@@ -47,19 +47,19 @@ public class ServerQuery
                 JTS3ServerQuery.LISTMODE_CHANNELLIST, virtualServer);
     }
 
-    public HashMap<String, String> doCommand(TSCommand command, int virtualServer)
+    public List<HashMap<String, String>> doCommand(TSCommand command, int virtualServer)
             throws CouldNotConnectException, VirtualServerDoesNotExistException,
-            CouldNotGetListException
+            CouldNotExecuteCommandException
     {
         return getCommandFromCache(command, virtualServer);
     }
 
-    private HashMap<String, String> getCommandFromCache(TSCommand commandType, int virtualServer) throws
-            CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotGetListException
+    private List<HashMap<String, String>> getCommandFromCache(TSCommand commandType, int virtualServer) throws
+            CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotExecuteCommandException
     {
-        String cacheKey = "Commands.Cache." + commandType.name();
-        
-        HashMap<String, String> commandData = (HashMap<String, String>) CacheFactory.getCache().getEntry(cacheKey);
+        String cacheKey = "Commands.Cache." + commandType.getRawCommand();
+
+        List<HashMap<String, String>> commandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(cacheKey);
 
         // do we have a cached version?
         if (commandData == null)
@@ -90,13 +90,76 @@ public class ServerQuery
         return dataList;
     }
 
-    private HashMap<String, String> getCommand(TSCommand commandType,
+    private List<HashMap<String, String>> getCommand(TSCommand commandType,
             int virtualServer) throws CouldNotConnectException,
-            VirtualServerDoesNotExistException, CouldNotGetListException
+            VirtualServerDoesNotExistException, CouldNotExecuteCommandException
     {
-        return null;
+        Configuration config = ConfigurationFactory.getConfiguration();
+
+        JTS3ServerQuery query = null;
+
+        try
+        {
+            query = new JTS3ServerQuery();
+
+            if (!query.connectTS3Query(config.getProperty("Teamspeak.Server.Host", "localhost"), Integer.parseInt(
+                    config.getProperty("Teamspeak.Server.Port", "10011"))))
+            {
+                echoError(query);
+
+                throw new CouldNotConnectException(
+                        "Could not connect to TeamSpeak server");
+            }
+
+            query.loginTS3(config.getProperty("Teamspeak.Login.Username"), config.
+                    getProperty("Teamspeak.Login.Password"));
+
+            if ((virtualServer != -1) && !query.selectVirtualServer(
+                    virtualServer))
+            {
+                echoError(query);
+
+                throw new VirtualServerDoesNotExistException(
+                        "Virtual server does not exist: " + virtualServer);
+            }
+
+            HashMap<String, String> rawOutput = query.doCommand(commandType.getRawCommand());
+
+            if (rawOutput != null)
+            {
+                String outputId = rawOutput.get("id");
+
+                if ("0".equals(outputId))
+                {
+                    String response = rawOutput.get("response");
+
+                    List<HashMap<String, String>> output = query.parseRawData(response);
+
+                    return output;
+                }
+                else
+                {
+                    echoError(query);
+
+                    throw new CouldNotExecuteCommandException("Could not execute command " + commandType.getRawCommand());
+                }
+            }
+            else
+            {
+                echoError(query);
+
+                throw new CouldNotExecuteCommandException("Could not execute command " + commandType.getRawCommand());
+            }
+        }
+        finally
+        {
+            if (query != null)
+            {
+                query.closeTS3Connection();
+            }
+        }
     }
-    
+
     private List<HashMap<String, String>> getList(int listType,
             int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotGetListException
@@ -200,21 +263,5 @@ public class ServerQuery
     /*
      * Just output all key / value pairs
      */
-    void outputHashMap(HashMap<String, String> hm)
-    {
-        if (hm == null)
-        {
-            return;
-        }
 
-        Collection<String> cValue = hm.values();
-        Collection<String> cKey = hm.keySet();
-        Iterator<String> itrValue = cValue.iterator();
-        Iterator<String> itrKey = cKey.iterator();
-
-        while (itrValue.hasNext() && itrKey.hasNext())
-        {
-            System.out.println(itrKey.next() + ": " + itrValue.next());
-        }
-    }
 }

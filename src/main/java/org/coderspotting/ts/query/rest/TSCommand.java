@@ -1,16 +1,16 @@
-
 package org.coderspotting.ts.query.rest;
 
-/**
- *
- * @author Bavo
- */
-public enum TSCommand
-{
-    CLIENTDBINFO;
+public class TSCommand
+{  
+    private String rawCommand;
     
-    public String getCommand()
+    public TSCommand(String rawCommand)
     {
-        return null;
+        this.rawCommand = rawCommand;
+    }
+    
+    public String getRawCommand()
+    {
+        return rawCommand;
     }
 }
