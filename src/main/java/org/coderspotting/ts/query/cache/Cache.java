@@ -1,7 +1,7 @@
 package org.coderspotting.ts.query.cache;
 
 /**
- * A factory class to fetch an instance of Cache
+ * An simple interface to add and fetch items from a cache.
  *
  * @author Bavo De Ridder <http://www.coderspotting.org/>
  */
