@@ -9,6 +9,17 @@ import java.util.logging.Logger;
 import org.coderspotting.ts.query.config.Configuration;
 import org.coderspotting.ts.query.rest.ServerQuery;
 
+/**
+ * Simple implementation of the Configuration interface based on in-memory Properties.
+ * 
+ * At construction properties are read from a file named "config.properties" that has
+ * to be present on the class path. If no such file is present or if it couldn't be read
+ * an empty configuration will be constructed.
+ * 
+ * The file "config.properties" is assumed to be UTF-8 encoded.
+ *
+ * @author Bavo De Ridder <http://www.coderspotting.org/>
+ */
 public class PropertiesConfiguration implements Configuration
 {
     private final static Logger LOG = Logger.getLogger(ServerQuery.class.getName());
