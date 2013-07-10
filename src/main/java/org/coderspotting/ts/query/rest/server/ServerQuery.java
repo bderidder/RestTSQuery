@@ -1,6 +1,5 @@
 package org.coderspotting.ts.query.rest.server;
 
-import org.coderspotting.ts.query.rest.server.command.SimpleCommand;
 import de.stefan1200.jts3serverquery.JTS3ServerQuery;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,40 +11,14 @@ import org.coderspotting.ts.query.cache.CacheTime;
 import org.coderspotting.ts.query.config.Configuration;
 import org.coderspotting.ts.query.config.ConfigurationFactory;
 import org.coderspotting.ts.query.rest.server.command.ICommand;
+import org.coderspotting.ts.query.rest.server.command.IListCommand;
 
 public class ServerQuery
 {
-    private static String CACHE_SERVERS_KEY = "Servers.Cache";
-    private static String CACHE_CLIENTS_KEY = "Clients.Cache";
-    private static String CACHE_CHANNELS_KEY = "Channels.Cache";
     private static long CACHE_TTL = 60 * CacheTime.SECOND;
 
     public ServerQuery()
     {
-    }
-
-    public List<HashMap<String, String>> getServerList() throws
-            CouldNotConnectException, VirtualServerDoesNotExistException,
-            CouldNotGetListException
-    {
-        return getListFromCache(CACHE_SERVERS_KEY,
-                JTS3ServerQuery.LISTMODE_SERVERLIST, -1);
-    }
-
-    public List<HashMap<String, String>> getClientList(int virtualServer) throws
-            CouldNotConnectException, VirtualServerDoesNotExistException,
-            CouldNotGetListException
-    {
-        return scrubLocalUsers(getListFromCache(CACHE_CLIENTS_KEY,
-                JTS3ServerQuery.LISTMODE_CLIENTLIST, virtualServer));
-    }
-
-    public List<HashMap<String, String>> getChannelList(int virtualServer)
-            throws CouldNotConnectException, VirtualServerDoesNotExistException,
-            CouldNotGetListException
-    {
-        return getListFromCache(CACHE_CHANNELS_KEY,
-                JTS3ServerQuery.LISTMODE_CHANNELLIST, virtualServer);
     }
 
     public void doCommand(ICommand command, int virtualServer)
@@ -55,12 +28,20 @@ public class ServerQuery
         getCommandFromCache(command, virtualServer);
     }
 
+    public void doListCommand(IListCommand command, int virtualServer)
+            throws CouldNotConnectException, VirtualServerDoesNotExistException,
+            CouldNotGetListException
+    {
+        getListCommandFromCache(command, virtualServer);
+    }
+
     private void getCommandFromCache(ICommand command, int virtualServer) throws
             CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotExecuteCommandException
     {
         String cacheKey = "Commands.Cache." + command.getNativeTSCommand();
 
-        List<HashMap<String, String>> commandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(cacheKey);
+        List<HashMap<String, String>> commandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(
+                cacheKey);
 
         // do we have a cached version?
         if (commandData == null)
@@ -73,22 +54,32 @@ public class ServerQuery
         command.processRawOutput(commandData);
     }
 
-    private List<HashMap<String, String>> getListFromCache(String cacheKey,
-            int listType, int virtualServer) throws CouldNotConnectException,
-            VirtualServerDoesNotExistException, CouldNotGetListException
+    private void getListCommandFromCache(IListCommand command, int virtualServer) throws
+            CouldNotConnectException, VirtualServerDoesNotExistException, CouldNotGetListException
     {
-        List<HashMap<String, String>> dataList = (List<HashMap<String, String>>) CacheFactory.
-                getCache().getEntry(cacheKey);
+        String cacheKey;
 
-        // do we have a cached version?
-        if (dataList == null)
+        if (command.getParameters() != null)
         {
-            dataList = getList(listType, virtualServer);
-
-            CacheFactory.getCache().putEntry(cacheKey, dataList, CACHE_TTL);
+            cacheKey = "ListCommands.Cache." + Integer.toString(command.getListMode()) + "." + command.getParameters();
+        }
+        else
+        {
+            cacheKey = "ListCommands.Cache." + Integer.toString(command.getListMode());
         }
 
-        return dataList;
+        List<HashMap<String, String>> listCommandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(
+                cacheKey);
+
+        // do we have a cached version?
+        if (listCommandData == null)
+        {
+            listCommandData = executeListCommand(command, virtualServer);
+
+            CacheFactory.getCache().putEntry(cacheKey, listCommandData, CACHE_TTL);
+        }
+
+        command.processRawOutput(listCommandData);
     }
 
     private List<HashMap<String, String>> executeCommand(ICommand command,
@@ -142,7 +133,8 @@ public class ServerQuery
                 {
                     echoError(query);
 
-                    throw new CouldNotExecuteCommandException("Could not execute command " + command.getNativeTSCommand());
+                    throw new CouldNotExecuteCommandException("Could not execute command " + command.
+                            getNativeTSCommand());
                 }
             }
             else
@@ -161,7 +153,7 @@ public class ServerQuery
         }
     }
 
-    private List<HashMap<String, String>> getList(int listType,
+    private List<HashMap<String, String>> executeListCommand(IListCommand command,
             int virtualServer) throws CouldNotConnectException,
             VirtualServerDoesNotExistException, CouldNotGetListException
     {
@@ -194,11 +186,11 @@ public class ServerQuery
                         "Virtual server does not exist: " + virtualServer);
             }
 
-            List<HashMap<String, String>> dataChannelList = query.getList(listType);
-
-            if (dataChannelList != null)
+            List<HashMap<String, String>> rawOutput = query.getList(command.getListMode());
+            
+            if (rawOutput != null)
             {
-                return dataChannelList;
+                return rawOutput;
             }
             else
             {
@@ -264,5 +256,4 @@ public class ServerQuery
     /*
      * Just output all key / value pairs
      */
-
 }

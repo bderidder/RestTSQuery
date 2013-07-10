@@ -18,6 +18,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.coderspotting.ts.query.rest.server.ServerQuery;
 import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.command.ServerListCommand;
 
 @Path("/virtualservers")
 public class VirtualServersResource
@@ -37,8 +38,12 @@ public class VirtualServersResource
         {
             ServerQuery query = new ServerQuery();
 
-            List<HashMap<String, String>> serverList = query.getServerList();
+            ServerListCommand cmd = new ServerListCommand();
 
+            query.doListCommand(cmd, -1);
+
+            List<HashMap<String, String>> serverList = cmd.getRawOutput();
+            
             try
             {
                 JsonFactory jsonFactory = new JsonFactory();
@@ -93,7 +98,11 @@ public class VirtualServersResource
         {
             ServerQuery query = new ServerQuery();
 
-            List<HashMap<String, String>> serverList = query.getServerList();
+            ServerListCommand cmd = new ServerListCommand();
+
+            query.doListCommand(cmd, -1);
+
+            List<HashMap<String, String>> serverList = cmd.getRawOutput();
 
             try
             {

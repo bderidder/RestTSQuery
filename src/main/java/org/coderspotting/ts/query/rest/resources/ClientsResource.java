@@ -18,11 +18,10 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.coderspotting.ts.query.rest.server.ClientDoesNotExistException;
 import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
-import org.coderspotting.ts.query.rest.server.CouldNotExecuteCommandException;
 import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
 import org.coderspotting.ts.query.rest.server.ServerQuery;
 import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
-import org.coderspotting.ts.query.rest.server.command.ClientDBListCommand;
+import org.coderspotting.ts.query.rest.server.command.ClientListCommand;
 
 @Path("/virtualservers/{serverId}/clients")
 public class ClientsResource
@@ -42,14 +41,12 @@ public class ClientsResource
         {
             ServerQuery query = new ServerQuery();
 
-            List<HashMap<String, String>> clients = query.getClientList(virtualServer);
+            ClientListCommand cmd = new ClientListCommand();
 
-            ClientDBListCommand cmd = new ClientDBListCommand();
-            
-            query.doCommand(cmd, virtualServer);
-            
-            HashMapUtils.outputHashMap(cmd.getRawOutput());
-            
+            query.doListCommand(cmd, virtualServer);
+
+            List<HashMap<String, String>> clients = cmd.getRawOutput();
+
             try
             {
                 String json = JsonHelper.hashMapListToJson(clients);
@@ -76,12 +73,6 @@ public class ClientsResource
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not get list").build();
         }
-        catch (CouldNotExecuteCommandException ex)
-        {
-            Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
-
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not get list").build();
-        }
         catch (CouldNotConnectException ex)
         {
             Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -102,8 +93,11 @@ public class ClientsResource
         {
             ServerQuery query = new ServerQuery();
 
-            List<HashMap<String, String>> clientList = query.getClientList(
-                    virtualServer);
+            ClientListCommand cmd = new ClientListCommand();
+
+            query.doListCommand(cmd, virtualServer);
+
+            List<HashMap<String, String>> clientList = cmd.getRawOutput();
 
             try
             {

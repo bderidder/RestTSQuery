@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.coderspotting.ts.query.rest.server.ServerQuery;
 import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
+import org.coderspotting.ts.query.rest.server.command.ChannelListCommand;
 
 @Path("/virtualservers/{id}/channels")
 public class ChannelsResource
@@ -34,11 +35,15 @@ public class ChannelsResource
         {
             ServerQuery query = new ServerQuery();
 
-            List<HashMap<String, String>> clients = query.getChannelList(virtualServer);
+            ChannelListCommand cmd = new ChannelListCommand();
 
+            query.doListCommand(cmd, virtualServer);
+
+            List<HashMap<String, String>> channels = cmd.getRawOutput();
+            
             try
             {
-              String json = JsonHelper.hashMapListToJson(clients);
+              String json = JsonHelper.hashMapListToJson(channels);
               
               return Response.ok(json, MediaType.APPLICATION_JSON).build();
             }

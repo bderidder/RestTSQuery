@@ -21,7 +21,7 @@ public class CacheImpl implements Cache
     }
 
     @Override
-    public void putEntry(String key, Object entry, long ttl)
+    public synchronized void putEntry(String key, Object entry, long ttl)
     {
         if (cacheEntries.containsKey(key))
         {
@@ -36,7 +36,7 @@ public class CacheImpl implements Cache
     }
 
     @Override
-    public Object getEntry(String key)
+    public synchronized Object getEntry(String key)
     {
         CacheEntry entry = cacheEntries.get(key);
 
