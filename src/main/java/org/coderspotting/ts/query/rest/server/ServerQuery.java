@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.configuration.Configuration;
 import org.coderspotting.ts.query.cache.CacheFactory;
 import org.coderspotting.ts.query.cache.CacheTime;
-import org.coderspotting.ts.query.config.Configuration;
 import org.coderspotting.ts.query.config.ConfigurationFactory;
 import org.coderspotting.ts.query.rest.server.command.ICommand;
 import org.coderspotting.ts.query.rest.server.command.IListCommand;
@@ -68,7 +68,8 @@ public class ServerQuery
             cacheKey = "ListCommands.Cache." + Integer.toString(command.getListMode());
         }
 
-        List<HashMap<String, String>> listCommandData = (List<HashMap<String, String>>) CacheFactory.getCache().getEntry(
+        List<HashMap<String, String>> listCommandData = (List<HashMap<String, String>>) CacheFactory.getCache().
+                getEntry(
                 cacheKey);
 
         // do we have a cached version?
@@ -94,8 +95,8 @@ public class ServerQuery
         {
             query = new JTS3ServerQuery();
 
-            if (!query.connectTS3Query(config.getProperty("Teamspeak.Server.Host", "localhost"), Integer.parseInt(
-                    config.getProperty("Teamspeak.Server.Port", "10011"))))
+            if (!query.connectTS3Query(config.getString("Teamspeak.Server.Host", "localhost"), config.getInteger(
+                    "Teamspeak.Server.Port", 10011)))
             {
                 echoError(query);
 
@@ -103,8 +104,7 @@ public class ServerQuery
                         "Could not connect to TeamSpeak server");
             }
 
-            query.loginTS3(config.getProperty("Teamspeak.Login.Username"), config.
-                    getProperty("Teamspeak.Login.Password"));
+            query.loginTS3(config.getString("Teamspeak.Login.Username"), config.getString("Teamspeak.Login.Password"));
 
             if ((virtualServer != -1) && !query.selectVirtualServer(
                     virtualServer))
@@ -165,8 +165,8 @@ public class ServerQuery
         {
             query = new JTS3ServerQuery();
 
-            if (!query.connectTS3Query(config.getProperty("Teamspeak.Server.Host", "localhost"), Integer.parseInt(
-                    config.getProperty("Teamspeak.Server.Port", "10011"))))
+            if (!query.connectTS3Query(config.getString("Teamspeak.Server.Host", "localhost"), config.getInteger(
+                    "Teamspeak.Server.Port", 10011)))
             {
                 echoError(query);
 
@@ -174,8 +174,7 @@ public class ServerQuery
                         "Could not connect to TeamSpeak server");
             }
 
-            query.loginTS3(config.getProperty("Teamspeak.Login.Username"), config.
-                    getProperty("Teamspeak.Login.Password"));
+            query.loginTS3(config.getString("Teamspeak.Login.Username"), config.getString("Teamspeak.Login.Password"));
 
             if ((virtualServer != -1) && !query.selectVirtualServer(
                     virtualServer))
@@ -187,7 +186,7 @@ public class ServerQuery
             }
 
             List<HashMap<String, String>> rawOutput = query.getList(command.getListMode());
-            
+
             if (rawOutput != null)
             {
                 return rawOutput;
