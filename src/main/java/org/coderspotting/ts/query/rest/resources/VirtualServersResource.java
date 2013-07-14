@@ -1,11 +1,12 @@
 package org.coderspotting.ts.query.rest.resources;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,8 +15,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.coderspotting.ts.query.rest.server.ServerQuery;
 import org.coderspotting.ts.query.rest.server.VirtualServerDoesNotExistException;
 import org.coderspotting.ts.query.rest.server.command.ServerListCommand;
@@ -43,35 +42,18 @@ public class VirtualServersResource
             query.doListCommand(cmd, -1);
 
             List<HashMap<String, String>> serverList = cmd.getRawOutput();
-            
-            try
+
+            JsonArrayBuilder arrBuilder = Json.createArrayBuilder();
+
+            for (HashMap<String, String> hashMap : serverList)
             {
-                JsonFactory jsonFactory = new JsonFactory();
-                StringWriter strWriter = new StringWriter();
-                
-                try (JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(strWriter))
-                {
-                    jsonGenerator.useDefaultPrettyPrinter();
-
-                    jsonGenerator.writeStartArray();
-
-                    for (HashMap<String, String> hashMap : serverList)
-                    {
-                        String serverId = hashMap.get("virtualserver_id");
-                        jsonGenerator.writeObject(context.getBaseUri() + "virtualservers/" + serverId);
-                    }
-
-                    jsonGenerator.writeEndArray();
-                }
-
-                return Response.ok(strWriter.toString(), MediaType.APPLICATION_JSON).build();
+                String serverId = hashMap.get("virtualserver_id");
+                arrBuilder.add(context.getBaseUri() + "virtualservers/" + serverId);
             }
-            catch (IOException ex)
-            {
-                Logger.getLogger(VirtualServersResource.class.getName()).log(Level.SEVERE, null, ex);
 
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
+            String jsonData = JsonHelper.buildJsonData(arrBuilder);
+
+            return Response.ok(jsonData, MediaType.APPLICATION_JSON).build();
         }
         catch (VirtualServerDoesNotExistException ex)
         {
@@ -104,54 +86,32 @@ public class VirtualServersResource
 
             List<HashMap<String, String>> serverList = cmd.getRawOutput();
 
-            try
+            HashMap<String, String> serverHashMap = null;
+
+            for (HashMap<String, String> hashMap : serverList)
             {
-                HashMap<String, String> serverHashMap = null;
+                String serverId = hashMap.get("virtualserver_id");
 
-                for (HashMap<String, String> hashMap : serverList)
+                if (strVirtualServerId.equals(serverId))
                 {
-                    String serverId = hashMap.get("virtualserver_id");
-
-                    if (strVirtualServerId.equals(serverId))
-                    {
-                        serverHashMap = hashMap;
-                    }
+                    serverHashMap = hashMap;
                 }
-
-                if (serverHashMap == null)
-                {
-                    throw new VirtualServerDoesNotExistException("Virtual server does not exist: " + virtualServer);
-                }
-                
-                JsonFactory jsonFactory = new JsonFactory();
-                StringWriter strWriter = new StringWriter();
-                
-                try (JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(strWriter))
-                {
-                    jsonGenerator.useDefaultPrettyPrinter();
-
-                    jsonGenerator.writeStartObject();
-                    
-                    JsonHelper.hashMapToJson(jsonGenerator, serverHashMap);
-                 
-                    jsonGenerator.writeFieldName("getChannels");
-                    jsonGenerator.writeObject(context.getBaseUri() + "virtualservers/" + strVirtualServerId + "/channels");
-                    jsonGenerator.writeFieldName("getClients");
-                    jsonGenerator.writeObject(context.getBaseUri() + "virtualservers/" + strVirtualServerId + "/clients");
-                                        
-                    jsonGenerator.writeEndObject();
-                    
-                    jsonGenerator.close();
-                    
-                    return Response.ok(strWriter.toString(), MediaType.APPLICATION_JSON).build();
-                }   
             }
-            catch (IOException ex)
+
+            if (serverHashMap == null)
             {
-                Logger.getLogger(VirtualServersResource.class.getName()).log(Level.SEVERE, null, ex);
-
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                throw new VirtualServerDoesNotExistException("Virtual server does not exist: " + virtualServer);
             }
+
+            JsonObjectBuilder objBuilder = JsonHelper.hashMapToJson(serverHashMap);
+
+            objBuilder.add("getChannels",
+                    context.getBaseUri() + "virtualservers/" + strVirtualServerId + "/channels");
+            objBuilder.add("getClients", context.getBaseUri() + "virtualservers/" + strVirtualServerId + "/clients");
+
+            String jsonData = JsonHelper.buildJsonData(objBuilder);
+
+            return Response.ok(jsonData, MediaType.APPLICATION_JSON).build();
         }
         catch (VirtualServerDoesNotExistException ex)
         {
@@ -163,7 +123,8 @@ public class VirtualServersResource
         {
             Logger.getLogger(VirtualServersResource.class.getName()).log(Level.SEVERE, null, ex);
 
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not connect to Team Speak server").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+                    "Could not connect to Team Speak server").build();
         }
     }
 }

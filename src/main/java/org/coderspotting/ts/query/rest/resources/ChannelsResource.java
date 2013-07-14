@@ -1,10 +1,10 @@
 package org.coderspotting.ts.query.rest.resources;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.JsonArrayBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -40,25 +40,19 @@ public class ChannelsResource
             query.doListCommand(cmd, virtualServer);
 
             List<HashMap<String, String>> channels = cmd.getRawOutput();
-            
-            try
-            {
-              String json = JsonHelper.hashMapListToJson(channels);
-              
-              return Response.ok(json, MediaType.APPLICATION_JSON).build();
-            }
-            catch (IOException ex)
-            {
-                Logger.getLogger(ChannelsResource.class.getName()).log(Level.SEVERE, null, ex);
 
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            } 
+            JsonArrayBuilder arrBuilder = JsonHelper.hashMapListToJson(channels);
+
+            String jsonData = JsonHelper.buildJsonData(arrBuilder);
+
+            return Response.ok(jsonData, MediaType.APPLICATION_JSON).build();
         }
         catch (VirtualServerDoesNotExistException ex)
         {
             Logger.getLogger(ChannelsResource.class.getName()).log(Level.SEVERE, null, ex);
 
-            return Response.status(Response.Status.NOT_FOUND).entity("404 NOT FOUND - Virtual Server " + virtualServer).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("404 NOT FOUND - Virtual Server " + virtualServer).
+                    build();
         }
         catch (Exception ex)
         {

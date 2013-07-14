@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,18 +50,12 @@ public class ClientsResource
 
             List<HashMap<String, String>> clients = scrubLocalUsers(cmd.getRawOutput());
 
-            try
-            {
-                String json = JsonHelper.hashMapListToJson(clients);
+            JsonArrayBuilder arrBuilder = JsonHelper.hashMapListToJson(clients);
 
-                return Response.ok(json, MediaType.APPLICATION_JSON).build();
-            }
-            catch (IOException ex)
-            {
-                Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
+            String jsonData = JsonHelper.buildJsonData(arrBuilder);
 
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
+            return Response.ok(jsonData, MediaType.APPLICATION_JSON).build();
+
         }
         catch (VirtualServerDoesNotExistException ex)
         {
@@ -100,52 +96,29 @@ public class ClientsResource
 
             List<HashMap<String, String>> clientList = scrubLocalUsers(cmd.getRawOutput());
 
-            try
+            HashMap<String, String> clientHashMap = null;
+
+            for (HashMap<String, String> hashMap : clientList)
             {
-                HashMap<String, String> clientHashMap = null;
+                String id = hashMap.get("client_database_id");
 
-                for (HashMap<String, String> hashMap : clientList)
+                if (strCliendId.equals(id))
                 {
-                    String id = hashMap.get("client_database_id");
-
-                    if (strCliendId.equals(id))
-                    {
-                        clientHashMap = hashMap;
-                    }
-                }
-
-                if (clientHashMap == null)
-                {
-                    throw new ClientDoesNotExistException(
-                            "Client does not exist: " + virtualServer);
-                }
-
-                JsonFactory jsonFactory = new JsonFactory();
-                StringWriter strWriter = new StringWriter();
-
-                try (JsonGenerator jsonGenerator = jsonFactory.
-                        createJsonGenerator(strWriter))
-                {
-                    jsonGenerator.useDefaultPrettyPrinter();
-
-                    jsonGenerator.writeStartObject();
-
-                    JsonHelper.hashMapToJson(jsonGenerator, clientHashMap);
-
-                    jsonGenerator.writeEndObject();
-
-                    jsonGenerator.close();
-
-                    return Response.ok(strWriter.toString(),
-                            MediaType.APPLICATION_JSON).build();
+                    clientHashMap = hashMap;
                 }
             }
-            catch (IOException ex)
-            {
-                Logger.getLogger(VirtualServersResource.class.getName()).log(Level.SEVERE, null, ex);
 
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            if (clientHashMap == null)
+            {
+                throw new ClientDoesNotExistException(
+                        "Client does not exist: " + virtualServer);
             }
+
+            JsonObjectBuilder objBuilder = JsonHelper.hashMapToJson(clientHashMap);
+
+            String jsonData = JsonHelper.buildJsonData(objBuilder);
+
+            return Response.ok(jsonData, MediaType.APPLICATION_JSON).build();
         }
         catch (VirtualServerDoesNotExistException ex)
         {
@@ -173,8 +146,7 @@ public class ClientsResource
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not connect to server").build();
         }
     }
-    
-    
+
     private List<HashMap<String, String>> scrubLocalUsers(
             List<HashMap<String, String>> clientList)
     {

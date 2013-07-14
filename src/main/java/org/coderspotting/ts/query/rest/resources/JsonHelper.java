@@ -1,61 +1,77 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.coderspotting.ts.query.rest.resources;
 
-import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.spi.JsonProvider;
+import org.codehaus.jackson.map.SerializationConfig;
 
 public class JsonHelper
 {
-    public static String hashMapListToJson(List<HashMap<String, String>> hashMapList) throws IOException
+    public static JsonArrayBuilder hashMapListToJson(List<HashMap<String, String>> hashMapList)
     {
-        JsonFactory jsonFactory = new JsonFactory();
-        StringWriter strWriter = new StringWriter();
-        try (JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(strWriter))
+        JsonArrayBuilder arrBuilder = Json.createArrayBuilder();
+
+
+        for (HashMap<String, String> hashMap : hashMapList)
         {
-            jsonGenerator.useDefaultPrettyPrinter();
-
-            jsonGenerator.writeStartArray();
-
-            for (HashMap<String, String> hashMap : hashMapList)
-            {
-                jsonGenerator.writeStartObject();
-                hashMapToJson(jsonGenerator, hashMap);
-                jsonGenerator.writeEndObject();
-            }
-
-            jsonGenerator.writeEndArray();
+            arrBuilder.add(hashMapToJson(hashMap));
         }
 
-        return strWriter.toString();
+        return arrBuilder;
     }
 
-    public static String hashMapToJson(HashMap<String, String> hashMap) throws IOException
+    public static JsonObjectBuilder hashMapToJson(HashMap<String, String> hashMap)
     {
-        JsonFactory jsonFactory = new JsonFactory();
-        StringWriter strWriter = new StringWriter();
-        try (JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(strWriter))
-        {
-            jsonGenerator.useDefaultPrettyPrinter();
+        JsonObjectBuilder objBuilder = Json.createObjectBuilder();
 
-            hashMapToJson(jsonGenerator, hashMap);
-        }
-
-        return strWriter.toString();
-    }
-
-    public static void hashMapToJson(JsonGenerator jsonGenerator, HashMap<String, String> hashMap) throws IOException
-    {
         for (String key : hashMap.keySet())
         {
-            jsonGenerator.writeFieldName(key);
-            jsonGenerator.writeString(hashMap.get(key));
+            objBuilder.add(key, hashMap.get(key));
         }
+
+        return objBuilder;
+    }
+
+    public static String buildJsonData(JsonObjectBuilder objBuilder)
+    {
+        StringWriter stWriter = new StringWriter();
+
+        try (JsonWriter jsonWriter = createJsonWriter(stWriter))
+        {
+            jsonWriter.writeObject(objBuilder.build());
+        }
+
+        return stWriter.toString();
+    }
+
+    public static String buildJsonData(JsonArrayBuilder arrBuilder)
+    {
+        StringWriter stWriter = new StringWriter();
+
+        try (JsonWriter jsonWriter = createJsonWriter(stWriter))
+        {
+            jsonWriter.writeArray(arrBuilder.build());
+        }
+
+        return stWriter.toString();
+    }
+    
+    private static JsonWriter createJsonWriter(Writer writer)
+    {
+        JsonProvider provider = JsonProvider.provider();
+
+        System.out.println("JSON Provider:" + provider.toString());
+        
+        HashMap<String,Boolean> config = new HashMap<>();
+        
+        config.put(SerializationConfig.Feature.INDENT_OUTPUT.name(), true);
+        
+        return Json.createWriterFactory(config).createWriter(writer);
     }
 }
