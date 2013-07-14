@@ -16,10 +16,16 @@ $('#tsClientsListPage').on('pageshow', function(event) {
         // creating html string
         var listString = '<ul data-role="listview" id="customerList">';
 
+        if (data.length > 0) {
+
         // running a loop
         $.each(data, function(index, value) {
             listString += '<li>' + this.client_nickname + '</li>';
         });
+        }
+        else {
+            listString = '<li>There is nobody online right now</li>';
+        }
         listString += '</ul>';
 
         //appending to the div
@@ -30,6 +36,12 @@ $('#tsClientsListPage').on('pageshow', function(event) {
     }
 
     function errorFunc(xhr, ajaxOptions, thrownError) {
-        alert(xhr.status + " " + xhr.responseText);
+                
+        var errorString = '<ul data-role="listview" id="customerList">';
+        errorString += '<li>There was an error, try again later</li>';
+        errorString += '</ul>';
+        
+        $('#tsClientsList').html(errorString);
+        $('#tsClientsList ul').listview();
     }
 });
