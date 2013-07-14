@@ -1,4 +1,4 @@
-$('#tsClientsListPage').live('pageshow', function(event) {
+$('#tsClientsListPage').on('pageshow', function(event) {
     var serviceURL = 'rest/virtualservers/1/clients';
 
     $.ajax({
