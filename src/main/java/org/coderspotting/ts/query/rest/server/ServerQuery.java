@@ -207,24 +207,6 @@ public class ServerQuery
         }
     }
 
-    private List<HashMap<String, String>> scrubLocalUsers(
-            List<HashMap<String, String>> clientList)
-    {
-        Iterator<HashMap<String, String>> it = clientList.iterator();
-
-        while (it.hasNext())
-        {
-            HashMap<String, String> clientHashMap = it.next();
-
-            if (clientHashMap.get("client_nickname").contains("from 127.0.0.1"))
-            {
-                it.remove();
-            }
-        }
-
-        return clientList;
-    }
-
     /*
      * Just output the last error message (if any)
      */

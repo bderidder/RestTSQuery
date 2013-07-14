@@ -3,6 +3,7 @@ package org.coderspotting.ts.query.rest.resources;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,7 +46,7 @@ public class ClientsResource
 
             query.doListCommand(cmd, virtualServer);
 
-            List<HashMap<String, String>> clients = cmd.getRawOutput();
+            List<HashMap<String, String>> clients = scrubLocalUsers(cmd.getRawOutput());
 
             try
             {
@@ -97,7 +98,7 @@ public class ClientsResource
 
             query.doListCommand(cmd, virtualServer);
 
-            List<HashMap<String, String>> clientList = cmd.getRawOutput();
+            List<HashMap<String, String>> clientList = scrubLocalUsers(cmd.getRawOutput());
 
             try
             {
@@ -171,5 +172,24 @@ public class ClientsResource
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not connect to server").build();
         }
+    }
+    
+    
+    private List<HashMap<String, String>> scrubLocalUsers(
+            List<HashMap<String, String>> clientList)
+    {
+        Iterator<HashMap<String, String>> it = clientList.iterator();
+
+        while (it.hasNext())
+        {
+            HashMap<String, String> clientHashMap = it.next();
+
+            if (clientHashMap.get("client_nickname").contains("from 127.0.0.1"))
+            {
+                it.remove();
+            }
+        }
+
+        return clientList;
     }
 }
