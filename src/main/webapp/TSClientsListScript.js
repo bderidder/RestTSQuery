@@ -14,7 +14,7 @@ $('#tsClientsListPage').on('pageshow', function(event) {
     function successFunc(data, status) {
 
         // creating html string
-        var listString = '<ul data-role="listview" id="customerList">';
+        var listString = '<ul data-role="listview" id="clientsList">';
 
         if (data.length > 0) {
 
@@ -37,7 +37,7 @@ $('#tsClientsListPage').on('pageshow', function(event) {
 
     function errorFunc(xhr, ajaxOptions, thrownError) {
                 
-        var errorString = '<ul data-role="listview" id="customerList">';
+        var errorString = '<ul data-role="listview" id="clientsList">';
         errorString += '<li>There was an error, try again later</li>';
         errorString += '</ul>';
         
