@@ -24,7 +24,7 @@ $('#tsClientsListPage').on('pageshow', function(event) {
         });
         }
         else {
-            listString = '<li>There is nobody online right now</li>';
+            listString += '<li>There is nobody online right now</li>';
         }
         listString += '</ul>';
 
