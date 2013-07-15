@@ -1,31 +1,58 @@
 $('#tsClientsListPage').on('pageshow', function(event) {
-    var serviceURL = 'rest/virtualservers/1/clients';
 
-    $.ajax({
+    var clientsServiceURL = 'rest/virtualservers/1/clients';
+    var channelsServiceURL = 'rest/virtualservers/1/channels';
+
+    $.when($.ajax({
         type: "GET",
-        url: serviceURL,
+        url: clientsServiceURL,
         data: param = "",
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: successFunc,
-        error: errorFunc
-    });
+        dataType: "json"
+    }), $.ajax({
+        type: "GET",
+        url: channelsServiceURL,
+        data: param = "",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json"
+    })).then(successFunc, errorFunc);
 
-    function successFunc(data, status) {
+    function successFunc(responseClients, responseChannels) {
+
+        var clientsList = responseClients[0];
+        var channelsList = responseChannels[0];
 
         // creating html string
         var listString = '<ul data-role="listview" id="clientsList">';
 
-        if (data.length > 0) {
-
-        // running a loop
-        $.each(data, function(index, value) {
-            listString += '<li>' + this.client_nickname + '</li>';
-        });
-        }
-        else {
+        if (clientsList.length === 0) {
             listString += '<li>There is nobody online right now</li>';
+            return;
         }
+
+        for (var i = 0; i < channelsList.length; i++) {
+
+            var channel = channelsList[i];
+            var channelId = channel.cid;
+
+            var clientsLi = '';
+
+            for (var j = 0; j < clientsList.length; j++) {
+
+                var client = clientsList[j];
+
+                if (client.cid === channelId) {
+                    clientsLi += '<li>' + client.client_nickname + '</li>';
+                }
+            }
+
+            if (clientsLi !== '')
+            {
+                listString += '<li data-role="list-divider">Channel ' + channel.channel_name + '</li>';
+                listString += clientsLi;
+            }
+        }
+
         listString += '</ul>';
 
         //appending to the div
@@ -36,11 +63,10 @@ $('#tsClientsListPage').on('pageshow', function(event) {
     }
 
     function errorFunc(xhr, ajaxOptions, thrownError) {
-                
+
         var errorString = '<ul data-role="listview" id="clientsList">';
         errorString += '<li>There was an error, try again later</li>';
         errorString += '</ul>';
-        
         $('#tsClientsList').html(errorString);
         $('#tsClientsList ul').listview();
     }
