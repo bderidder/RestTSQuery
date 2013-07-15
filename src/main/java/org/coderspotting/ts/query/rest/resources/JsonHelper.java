@@ -9,7 +9,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import javax.json.spi.JsonProvider;
-import org.codehaus.jackson.map.SerializationConfig;
 
 public class JsonHelper
 {
@@ -70,7 +69,7 @@ public class JsonHelper
         
         HashMap<String,Boolean> config = new HashMap<>();
         
-        config.put(SerializationConfig.Feature.INDENT_OUTPUT.name(), true);
+        //config.put(SerializationConfig.Feature.INDENT_OUTPUT.name(), true);
         
         return Json.createWriterFactory(config).createWriter(writer);
     }
