@@ -1,7 +1,5 @@
 package org.coderspotting.ts.query.rest.resources;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,8 +15,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.coderspotting.ts.query.rest.server.ClientDoesNotExistException;
 import org.coderspotting.ts.query.rest.server.CouldNotConnectException;
 import org.coderspotting.ts.query.rest.server.CouldNotGetListException;
@@ -127,17 +123,11 @@ public class ClientsResource
             return Response.status(Response.Status.NOT_FOUND).entity("404 NOT FOUND - Virtual Server " + virtualServer).
                     build();
         }
-        catch (ClientDoesNotExistException ex)
+        catch (ClientDoesNotExistException | CouldNotGetListException ex)
         {
             Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
 
             return Response.status(Response.Status.NOT_FOUND).entity("404 NOT FOUND - Client " + clientId).build();
-        }
-        catch (CouldNotGetListException ex)
-        {
-            Logger.getLogger(ClientsResource.class.getName()).log(Level.SEVERE, null, ex);
-
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not get list").build();
         }
         catch (CouldNotConnectException ex)
         {
