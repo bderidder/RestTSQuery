@@ -64,10 +64,16 @@ $('#tsClientsListPage').on('pageshow', function(event) {
 
     function errorFunc(xhr, ajaxOptions, thrownError) {
 
-        var errorString = '<ul data-role="listview" id="clientsList">';
+        var errorString = '';
+
+        errorString += '<ul data-role="listview" id="clientsList">';
         errorString += '<li>There was an error, try again later</li>';
         errorString += '</ul>';
+
+        //appending to the div
         $('#tsClientsList').html(errorString);
+
+        // refreshing the list to apply styles
         $('#tsClientsList ul').listview();
     }
 });
