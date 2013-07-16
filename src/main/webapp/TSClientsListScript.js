@@ -25,31 +25,33 @@ $('#tsClientsListPage').on('pageshow', function(event) {
         // creating html string
         var listString = '<ul data-role="listview" id="clientsList">';
 
-        if (clientsList.length === 0) {
+        if (clientsList.length === 0)
+        {
             listString += '<li>There is nobody online right now</li>';
-            return;
         }
+        else
+        {
+            for (var i = 0; i < channelsList.length; i++) {
 
-        for (var i = 0; i < channelsList.length; i++) {
+                var channel = channelsList[i];
+                var channelId = channel.cid;
 
-            var channel = channelsList[i];
-            var channelId = channel.cid;
+                var clientsLi = '';
 
-            var clientsLi = '';
+                for (var j = 0; j < clientsList.length; j++) {
 
-            for (var j = 0; j < clientsList.length; j++) {
+                    var client = clientsList[j];
 
-                var client = clientsList[j];
-
-                if (client.cid === channelId) {
-                    clientsLi += '<li>' + client.client_nickname + '</li>';
+                    if (client.cid === channelId) {
+                        clientsLi += '<li>' + client.client_nickname + '</li>';
+                    }
                 }
-            }
 
-            if (clientsLi !== '')
-            {
-                listString += '<li data-role="list-divider">Channel ' + channel.channel_name + '</li>';
-                listString += clientsLi;
+                if (clientsLi !== '')
+                {
+                    listString += '<li data-role="list-divider">Channel ' + channel.channel_name + '</li>';
+                    listString += clientsLi;
+                }
             }
         }
 
